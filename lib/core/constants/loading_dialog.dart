@@ -1,53 +1,59 @@
 import 'package:flutter/material.dart';
 
-import '../../widgets/loading_animation.dart';
 import '../utils/size_config.dart';
 
-class LoadingDialog extends StatelessWidget {
-  final String title;
-
-  const LoadingDialog(this.title, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Center(
-      child: Container(
-        // The background color
-        color: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children:  [
-              // The loading indicator
-              Container(
-                color: Colors.transparent,
-                height: SizeConfig.yMargin(context, 18),
-                child: LoadingAnimation(),
-              ),
-              SizedBox(height: SizeConfig.yMargin(context, .2)),
-
-              DefaultTextStyle(
-                style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Roboto',
-                    backgroundColor: Colors.transparent,
-                    fontSize: SizeConfig.textSize(context, 2)
+class LoaderDialog {
+  static Future showLoadingDialog(BuildContext context, {String? message}) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/loading.gif',
+                  height: MediaQuery.of(context).size.height * 0.10,
+                  width: MediaQuery.of(context).size.height * 0.10,
                 ),
-                child: Text(
-                  title,
-                  softWrap: true,
+                SizedBox(height: message != null ? 5 : 0),
+                message != null
+                    ? Text(
+                  message,
                   textAlign: TextAlign.center,
-
-                ),
-              )
-            ],
+                  style: TextStyle(color: Colors.white, fontSize: SizeConfig.textSize(context, 2), fontStyle: FontStyle.italic),
+                )
+                    : const SizedBox()
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
 
+  static Future<void> showNoInternet(BuildContext context, GlobalKey key) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          key: key,
+          elevation: 0.0,
+          backgroundColor: Colors.white,
+          child: Center(
+            child: Image.asset(
+              'assets/images/loading.gif',
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+            ),
+          ),
+        );
+      },
+    );
   }
 }

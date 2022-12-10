@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop_app/styles/brand_color.dart';
+import 'package:shop_app/widgets/utility_widgets.dart';
 import 'package:stacked/stacked.dart';
 
 import 'signup_viewmodel.dart';
@@ -23,7 +23,7 @@ class SignUpView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    height: 300,
+                    height: 280,
                     decoration: const BoxDecoration(
                       image: DecorationImage(image: AssetImage("assets/images/top_auth.png"), fit: BoxFit.fill),
                     ),
@@ -59,13 +59,13 @@ class SignUpView extends StatelessWidget {
                   ),
                 ],
               ),
-              Padding(
+              Container(
                 padding: const EdgeInsets.all(15.0),
+                margin: const EdgeInsets.only(top: 270),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 40),
                     const Text("Email Address"),
                     const SizedBox(height: 6),
                     TextFormField(
@@ -85,19 +85,8 @@ class SignUpView extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10)
                       ),
                     ),
-                    const SizedBox(height: 120),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => model.gotoSetPassword(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: BrandColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
-                        ),
-                        child: const Text("Create Account"),
-                      ),
-                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * .12),
+                    SquareButton(title: "Create Account", onPressed: () => model.gotoSetPassword()),
                   ],
                 ),
               ),
