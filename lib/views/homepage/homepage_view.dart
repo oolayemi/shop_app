@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:shop_app/views/check_out_form/check_out_form_view.dart';
 import 'package:shop_app/views/homepage/homepage_viewmodel.dart';
 import 'package:shop_app/views/new_stock/new_stock_view.dart';
@@ -8,6 +9,7 @@ import 'package:shop_app/widgets/utility_widgets.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
+import '../../core/utils/tools.dart';
 import '../../styles/brand_color.dart';
 
 class HomepageView extends StatelessWidget {
@@ -17,6 +19,7 @@ class HomepageView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomepageViewModel>.reactive(
       viewModelBuilder: () => HomepageViewModel(),
+      onModelReady: (model) => model.setUp(),
       builder: (context, model, child) {
         return CustomScaffoldWidget(
           padding: 0,
@@ -47,33 +50,33 @@ class HomepageView extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    const CircleAvatar(
-                                      backgroundImage: AssetImage("assets/images/user.png"),
+                                    CircleAvatar(
+                                      backgroundImage: model.profile?.imageUrl == null
+                                          ? const AssetImage("assets/images/user.png")
+                                          : NetworkImage(model.profile!.imageUrl!) as ImageProvider,
                                     ),
                                     const SizedBox(width: 6),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: const [
-                                        Text(
+                                      children: [
+                                        const Text(
                                           'Welcome back,',
                                           style: TextStyle(color: Colors.white),
                                         ),
                                         Text(
-                                          'Anjolaoluwa',
-                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                          "${model.profile!.firstname}",
+                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
                                       ],
                                     )
                                   ],
                                 ),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: const SizedBox()
-                                  // const Icon(
-                                  //   Icons.notifications_none_rounded,
-                                  //   color: Colors.white,
-                                  // ),
-                                ),
+                                IconButton(onPressed: () {}, icon: const SizedBox()
+                                    // const Icon(
+                                    //   Icons.notifications_none_rounded,
+                                    //   color: Colors.white,
+                                    // ),
+                                    ),
                               ],
                             ),
                             const SizedBox(height: 50),
@@ -155,120 +158,87 @@ class HomepageView extends StatelessWidget {
                       topRight: Radius.circular(12),
                     ),
                   ),
-                  child: InkWell(
-                    onTap: () => model.toggleProduct(),
-                    child: model.toggleProducts
-                        ? Center(
+                  child: model.allSales!.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset("assets/images/worried.svg"),
+                              const SizedBox(height: 20),
+                              const Text(
+                                "You have not recorded\nany stock for today.",
+                                style: TextStyle(fontSize: 16, color: Color(0xFF102002)),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  NavigationService().navigateToView(const RecordSaleView());
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: BrandColors.primary,
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                                  //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                                ),
+                                child: const Text(
+                                  "Record Sale",
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(left: 20.0, right: 20, top: 20),
+                          child: SingleChildScrollView(
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                SvgPicture.asset("assets/images/worried.svg"),
-                                const SizedBox(height: 20),
-                                const Text(
-                                  "You have not recorded\nany stock for today.",
-                                  style: TextStyle(fontSize: 16, color: Color(0xFF102002)),
-                                  textAlign: TextAlign.center,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      "Today’s Stock",
+                                      style: TextStyle(color: Color(0xFF102002), fontSize: 16),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        NavigationService().navigateToView(const RecordSaleView());
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: BrandColors.primary,
+                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                        //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                                      ),
+                                      child: const Text(
+                                        "Record Sale",
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 10),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    NavigationService().navigateToView(const RecordSaleView());
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: BrandColors.primary,
-                                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                                    //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
-                                  ),
-                                  child: const Text(
-                                    "Record Sale",
-                                  ),
+                                const SizedBox(height: 12),
+                                Column(
+                                  children: model.allSales!.map((sale) {
+                                    return Column(
+                                      children: [
+                                        ListTile(
+                                          title: Text("${sale.product!.name} - ${sale.quantity} piece(s)"),
+                                          trailing: Text(
+                                            formatMoney(sale.totalPrice.toString()),
+                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                          ),
+                                          subtitle: Text(DateFormat('dd/MM/yy').format(DateTime.parse(sale.createdAt!))),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                        ),
+                                        const Divider(thickness: 1),
+                                      ],
+                                    );
+                                  }).toList(),
                                 ),
+                                const SizedBox(height: 20)
                               ],
                             ),
-                          )
-                        : Padding(
-                            padding: const EdgeInsets.only(left: 20.0, right: 20, top: 20),
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                        "Today’s Stock",
-                                        style: TextStyle(color: Color(0xFF102002), fontSize: 16),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          NavigationService().navigateToView(const RecordSaleView());
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: BrandColors.primary,
-                                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                                          //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
-                                        ),
-                                        child: const Text(
-                                          "Record Sale",
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  const ListTile(
-                                    title: Text("Bottles of Pepsi - 5packs"),
-                                    trailing: Text("₦2,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                    subtitle: Text("5/11/22"),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  ),
-                                  const Divider(thickness: 1),
-                                  const ListTile(
-                                    title: Text("Bottles of Pepsi - 5packs"),
-                                    trailing: Text("₦2,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                    subtitle: Text("5/11/22"),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  ),
-                                  const Divider(thickness: 1),
-                                  const ListTile(
-                                    title: Text("Bottles of Pepsi - 5packs"),
-                                    trailing: Text("₦2,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                    subtitle: Text("5/11/22"),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  ),
-                                  const Divider(thickness: 1),
-                                  const ListTile(
-                                    title: Text("Bottles of Pepsi - 5packs"),
-                                    trailing: Text("₦2,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                    subtitle: Text("5/11/22"),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  ),
-                                  const Divider(thickness: 1),
-                                  const ListTile(
-                                    title: Text("Bottles of Pepsi - 5packs"),
-                                    trailing: Text("₦2,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                    subtitle: Text("5/11/22"),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  ),
-                                  const Divider(thickness: 1),
-                                  const ListTile(
-                                    title: Text("Bottles of Pepsi - 5packs"),
-                                    trailing: Text("₦2,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                    subtitle: Text("5/11/22"),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  ),
-                                  const Divider(thickness: 1),
-                                  const ListTile(
-                                    title: Text("Bottles of Pepsi - 5packs"),
-                                    trailing: Text("₦2,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                    subtitle: Text("5/11/22"),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  ),
-                                  const SizedBox(height: 20)
-                                ],
-                              ),
-                            ),
                           ),
-                  ),
+                        ),
                 ),
               ),
             ],

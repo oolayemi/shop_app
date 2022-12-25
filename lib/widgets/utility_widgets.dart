@@ -1,9 +1,9 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:shop_app/core/models/store_products_response.dart';
 
-import '../core/models/product_data.dart';
+import '../core/models/nearby_store.dart';
 import '../core/utils/size_config.dart';
 import '../styles/brand_color.dart';
 
@@ -26,7 +26,7 @@ MaterialColor createMaterialColor(Color color) {
   for (int i = 1; i < 10; i++) {
     strengths.add(0.1 * i);
   }
-  strengths.forEach((strength) {
+  for (var strength in strengths) {
     final double ds = 0.5 - strength;
     swatch[(strength * 1000).round()] = Color.fromRGBO(
       r + ((ds < 0 ? r : (255 - r)) * ds).round(),
@@ -34,180 +34,8 @@ MaterialColor createMaterialColor(Color color) {
       b + ((ds < 0 ? b : (255 - b)) * ds).round(),
       1,
     );
-  });
+  }
   return MaterialColor(color.value, swatch as Map<int, Color>);
-}
-
-Widget customTextField(
-    {String? label,
-    String? hintText,
-    String? prefixImage,
-    String? suffixImage,
-    int? minLines,
-    int? maxLines,
-    TextEditingController? controller,
-    bool? obscure,
-    TextInputAction? action,
-    TextInputType? inputType,
-    Function? onChanged,
-    Function? suffixFunc,
-    String? errorText,
-    bool? enabled,
-    String? helperText,
-    TextStyle? helperStyle,
-    int? maxLength,
-    List<String>? hints,
-    required BuildContext context}) {
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.start,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      label == null
-          ? const SizedBox()
-          : Container(
-              margin: EdgeInsets.only(bottom: SizeConfig.yMargin(context, .5)),
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.headline5!.copyWith(fontSize: SizeConfig.textSize(context, 1.8)),
-              ),
-            ),
-      Row(
-        children: [
-          Expanded(
-            child: TextField(
-              autofillHints: hints,
-              enableInteractiveSelection: true,
-              enabled: enabled ?? true,
-              controller: controller,
-              maxLines: maxLines ?? 1,
-              minLines: minLines,
-              obscureText: obscure ?? false,
-              style: TextStyle(
-                fontSize: SizeConfig.textSize(context, 2),
-              ),
-              textInputAction: TextInputAction.done,
-              keyboardType: inputType ?? TextInputType.text,
-              onChanged: onChanged as void Function(String)?,
-              maxLength: maxLength,
-              decoration: InputDecoration(
-                fillColor: Colors.transparent,
-                filled: true,
-                hintText: hintText ?? '',
-                hintStyle: TextStyle(fontSize: SizeConfig.textSize(context, 2)),
-                helperText: helperText,
-                helperStyle: helperStyle,
-                enabledBorder: const OutlineInputBorder(
-                  // width: 0.0 produces a thin "hairline" border
-                  borderSide: BorderSide(color: BrandColors.outlineText, width: 0.0),
-                ),
-                border: OutlineInputBorder(
-                    // borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(SizeConfig.yMargin(context, 1))),
-                errorBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.red),
-                    borderRadius: BorderRadius.circular(SizeConfig.yMargin(context, 1))),
-                focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: BrandColors.secondary),
-                    borderRadius: BorderRadius.circular(SizeConfig.yMargin(context, 1))),
-                errorText: errorText,
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: SizeConfig.yMargin(context, 2), horizontal: SizeConfig.xMargin(context, 4)),
-                prefixIcon: prefixImage == null
-                    ? null
-                    : Container(
-                        margin: EdgeInsets.symmetric(horizontal: SizeConfig.xMargin(context, 4)),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(prefixImage),
-                          ],
-                        ),
-                      ),
-              ),
-            ),
-          ),
-          suffixImage == null
-              ? const SizedBox()
-              : Container(
-                  margin: EdgeInsets.symmetric(horizontal: SizeConfig.xMargin(context, 1)),
-                  child: InkWell(
-                    enableFeedback: true,
-                    // excludeFromSemantics: true,
-                    borderRadius: BorderRadius.circular(SizeConfig.yMargin(context, 1)),
-
-                    onTap: suffixFunc as void Function()?,
-                    child: Container(
-                      height: SizeConfig.yMargin(context, 6),
-                      padding: EdgeInsets.symmetric(
-                          vertical: SizeConfig.yMargin(context, 0.5), horizontal: SizeConfig.xMargin(context, 3.8)),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(
-                          color: BrandColors.outlineText,
-                          style: BorderStyle.solid,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          SizeConfig.yMargin(context, 1),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            suffixImage,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-        ],
-      ),
-    ],
-  );
-}
-
-Widget customDropdown<T>(
-    {String? label, T? value, List<DropdownMenuItem<T>>? items, Function? onChanged, required BuildContext context}) {
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.start,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      label == null
-          ? const SizedBox()
-          : Container(
-              margin: EdgeInsets.only(bottom: SizeConfig.yMargin(context, .5)),
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.headline5!.copyWith(fontSize: SizeConfig.textSize(context, 2)),
-              ),
-            ),
-      Container(
-        padding: EdgeInsets.symmetric(vertical: SizeConfig.yMargin(context, 2.2), horizontal: SizeConfig.xMargin(context, 4)),
-        decoration: BoxDecoration(
-            color: const Color(0xFFB9B9B9).withOpacity(0.12), borderRadius: BorderRadius.circular(SizeConfig.yMargin(context, 1))),
-        child: DropdownButton(
-            // focusColor: Color(0xFFB9B9B9).withOpacity(0.12),
-            dropdownColor: Colors.white,
-            elevation: 0,
-            underline: const SizedBox(),
-            isDense: true,
-            isExpanded: true,
-            icon: const Icon(
-              Icons.keyboard_arrow_down,
-              color: BrandColors.secondary,
-            ),
-            value: value,
-            items: items,
-            onChanged: onChanged!()),
-      ),
-    ],
-  );
 }
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -268,8 +96,25 @@ class CustomScaffoldWidget extends StatelessWidget {
   }
 }
 
-class SomethingSha extends StatelessWidget {
-  const SomethingSha({Key? key}) : super(key: key);
+class SomethingSha extends StatefulWidget {
+  final dynamic model;
+  final int? index;
+
+  const SomethingSha({Key? key, this.model, this.index}) : super(key: key);
+
+  @override
+  State<SomethingSha> createState() => _SomethingShaState();
+}
+
+class _SomethingShaState extends State<SomethingSha> {
+  Product? selectedProduct;
+  int? quantity;
+
+  @override
+  void initState() {
+    print(widget.index);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -289,26 +134,29 @@ class SomethingSha extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 InkWell(
-                  onTap: () => buildDropDown(ctx: context, check: [
-                    ProductData('Eva Water', '3,000'),
-                    ProductData('Aqua Water', '12,000'),
-                    ProductData('Red Wine', '35,000'),
-                    ProductData('Little Liquor', '10,000'),
-                    ProductData('Eva Water with lime sauce and ginger flavour', '30,000'),
-                  ]),
+                  onTap: () => buildDropDown(
+                      ctx: context,
+                      check: widget.model.storeProducts,
+                      onSelectProduct: (product) {
+                        selectedProduct = product;
+                        if (quantity != null) {
+                          widget.model.setValueInProducts(widget.index, selectedProduct, quantity);
+                        }
+                        setState(() {});
+                      }),
                   child: Container(
                     height: 50,
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(width: 1.2)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Expanded(
                             child: Text(
-                          "Select product",
+                          selectedProduct?.name ?? "Select product",
                           overflow: TextOverflow.ellipsis,
                         )),
-                        Icon(Icons.keyboard_arrow_down_rounded)
+                        const Icon(Icons.keyboard_arrow_down_rounded)
                       ],
                     ),
                   ),
@@ -327,23 +175,29 @@ class SomethingSha extends StatelessWidget {
                   style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 5),
-                InkWell(
-                  child: SizedBox(
-                    height: 50,
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        hintText: "Enter Quantity",
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.black, width: 1.2)),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.black, width: 1.2)),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                SizedBox(
+                  height: 50,
+                  child: TextFormField(
+                    initialValue: widget.index.toString(),
+                    decoration: InputDecoration(
+                      hintText: "Enter Quantity",
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.black, width: 1.2)),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Colors.black, width: 1.2)),
                     ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (string) => string!.isEmpty ? "Set value" : null,
+                    onChanged: (String value) {
+                      quantity = value.isEmpty ? 0 : int.parse(value);
+                      if (selectedProduct != null) {
+                        widget.model.setValueInProducts(widget.index, selectedProduct, quantity);
+                      }
+                    },
                   ),
                 ),
               ],
@@ -355,7 +209,7 @@ class SomethingSha extends StatelessWidget {
   }
 }
 
-void buildDropDown({required BuildContext ctx, required List<ProductData> check, Function? selectPlan}) {
+void buildDropDown({required BuildContext ctx, required List<StoreProductData>? check, Function(Product)? onSelectProduct}) {
   showModalBottomSheet(
     enableDrag: false,
     context: ctx,
@@ -421,10 +275,10 @@ void buildDropDown({required BuildContext ctx, required List<ProductData> check,
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  for (ProductData item in check)
+                  for (StoreProductData item in check!)
                     InkWell(
                       onTap: () {
-                        selectPlan != null ? selectPlan(item) : null;
+                        onSelectProduct != null ? onSelectProduct(item.product!) : null;
                         Navigator.of(ctx).pop();
                       },
                       child: Container(
@@ -439,14 +293,14 @@ void buildDropDown({required BuildContext ctx, required List<ProductData> check,
                               margin: EdgeInsets.only(left: SizeConfig.xMargin(context, 2)),
                               width: MediaQuery.of(context).size.width * .65,
                               child: Text(
-                                item.name,
+                                item.product!.name!,
                                 style: Theme.of(context).textTheme.headline3!.copyWith(
                                       fontSize: SizeConfig.textSize(context, 2),
                                     ),
                               ),
                             ),
                             Text(
-                              "₦${item.amount}",
+                              "₦${item.product!.price}",
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                             )
                           ],
@@ -463,7 +317,7 @@ void buildDropDown({required BuildContext ctx, required List<ProductData> check,
   );
 }
 
-void buildStoreDropDown({required BuildContext ctx, check, Function? selectStore}) {
+void buildStoreDropDown({required BuildContext ctx, List<Store>? check, Function(Store)? selectStore}) {
   showModalBottomSheet(
       enableDrag: false,
       context: ctx,
@@ -493,7 +347,7 @@ void buildStoreDropDown({required BuildContext ctx, check, Function? selectStore
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        for (String item in check)
+                        for (Store item in check!)
                           InkWell(
                             onTap: () {
                               selectStore != null ? selectStore(item) : null;
@@ -510,7 +364,7 @@ void buildStoreDropDown({required BuildContext ctx, check, Function? selectStore
                                     child: Container(
                                       margin: EdgeInsets.only(left: SizeConfig.xMargin(context, 2)),
                                       child: Text(
-                                        item,
+                                        item.name!,
                                         style:
                                             Theme.of(context).textTheme.headline3!.copyWith(fontSize: SizeConfig.textSize(context, 2)),
                                         maxLines: null,

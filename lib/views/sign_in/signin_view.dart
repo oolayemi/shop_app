@@ -3,9 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shop_app/styles/brand_color.dart';
 import 'package:shop_app/widgets/utility_widgets.dart';
 import 'package:stacked/stacked.dart';
-import 'package:stacked_services/stacked_services.dart';
 
-import '../check_in/check_in_view.dart';
 import 'signin_viewmodel.dart';
 
 class SignInView extends StatelessWidget {
@@ -44,6 +42,7 @@ class SignInView extends StatelessWidget {
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: model.passwordController,
+                        obscureText: true,
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             hintText: "Enter your password",
@@ -53,7 +52,12 @@ class SignInView extends StatelessWidget {
                       SizedBox(height: MediaQuery.of(context).size.height * .12),
                       SquareButton(
                         title: "Login",
-                        onPressed: () => NavigationService().clearStackAndShowView(const CheckInView()),
+                        onPressed: () {
+                          if(model.formKey.currentState!.validate()) {
+                            // NavigationService().clearStackAndShowView(const CheckInView());
+                            model.signIn(context);
+                          }
+                        }
                       ),
                       const SizedBox(height: 10),
                       Center(
