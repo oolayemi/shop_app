@@ -68,7 +68,8 @@ class CheckInViewModel extends ReactiveViewModel {
         return apiResponse;
       } else {
         CheckInData checkInData = CheckInData.fromJson(jsonData['data']);
-        _authService.setCheckedIn(checkInData);
+        await _authService.setCheckedIn(checkInData);
+        await _authService.getProfile();
         CheckInFormViewModel().getStoreProducts(checkInData.storeId!);
         apiResponse = ApiResponse(showMessage: true, message: json.decode(response.toString())['message']);
         return apiResponse;

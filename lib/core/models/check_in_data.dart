@@ -5,7 +5,7 @@ class CheckInData {
   String? uuid;
   int? userId;
   int? storeId;
-  int? isCheckedOut;
+  bool? isCheckedOut;
   String? checkoutTime;
   String? comment;
   String? createdAt;
