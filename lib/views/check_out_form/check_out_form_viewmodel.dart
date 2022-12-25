@@ -61,7 +61,6 @@ class CheckOutFormViewModel extends ReactiveViewModel {
       Map responseData = response.data!;
 
       if (statusCode == 200) {
-        Map jsonData = jsonDecode(response.toString());
         if (responseData['status'] == 'success') {
           _storageService.addBool('isCheckedIn', false);
           _navigationService.clearStackAndShowView(
