@@ -137,8 +137,8 @@ class _SomethingShaState extends State<SomethingSha> {
                   onTap: () => buildDropDown(
                       ctx: context,
                       check: widget.model.storeProducts,
-                      onSelectProduct: (product) {
-                        selectedProduct = product;
+                      onSelectProduct: (storeProductData) {
+                        selectedProduct = storeProductData.product;
                         if (quantity != null) {
                           widget.model.setValueInProducts(widget.index, selectedProduct, quantity);
                         }
@@ -209,7 +209,7 @@ class _SomethingShaState extends State<SomethingSha> {
   }
 }
 
-void buildDropDown({required BuildContext ctx, required List<StoreProductData>? check, Function(Product)? onSelectProduct}) {
+void buildDropDown({required BuildContext ctx, required List<StoreProductData>? check, Function(StoreProductData)? onSelectProduct}) {
   showModalBottomSheet(
     enableDrag: false,
     context: ctx,
@@ -278,7 +278,7 @@ void buildDropDown({required BuildContext ctx, required List<StoreProductData>? 
                   for (StoreProductData item in check!)
                     InkWell(
                       onTap: () {
-                        onSelectProduct != null ? onSelectProduct(item.product!) : null;
+                        onSelectProduct != null ? onSelectProduct(item!) : null;
                         Navigator.of(ctx).pop();
                       },
                       child: Container(

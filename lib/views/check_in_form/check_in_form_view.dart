@@ -69,8 +69,8 @@ class CheckInFormView extends StatelessWidget {
                                       onTap: () => buildDropDown(
                                           ctx: context,
                                           check: model.storeProducts,
-                                          onSelectProduct: (product) {
-                                            model.selectedProduct = product;
+                                          onSelectProduct: (storeProductData) {
+                                            model.selectedProduct = storeProductData;
                                             model.notifyListeners();
                                           }),
                                       child: Container(
@@ -83,7 +83,7 @@ class CheckInFormView extends StatelessWidget {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                model.selectedProduct?.name ?? "Select product",
+                                                model.selectedProduct?.product?.name ?? "Select product",
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
@@ -212,10 +212,8 @@ class CheckInFormView extends StatelessWidget {
                                                 height: 18,
                                               )),
                                               onTap: () {
-                                                model.records.remove(e);
-                                                model.inputIndex = 1;
-                                                model.notifyListeners();
-                                                FocusScope.of(context).unfocus();
+                                                // print(e['product'].id);
+                                                model.removeProduct(context, e);
                                               },
                                             ),
                                           ),

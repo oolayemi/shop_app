@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:shop_app/core/models/api_response.dart';
+import 'package:shop_app/core/models/check_out_stock_details.dart';
 import 'package:shop_app/widgets/utility_widgets.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
@@ -9,9 +11,7 @@ import 'package:stacked_services/stacked_services.dart';
 import '../../app/locator.dart';
 import '../../core/constants/loading_dialog.dart';
 import '../../core/exceptions/error_handling.dart';
-import '../../core/models/add_input.dart';
 import '../../core/models/check_in_data.dart';
-import '../../core/models/store_products_response.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/utility_storage_service.dart';
 import '../../core/utils/tools.dart';
@@ -25,35 +25,30 @@ class CheckOutFormViewModel extends ReactiveViewModel {
   final DialogService _dialogService = locator<DialogService>();
 
   final formKey = GlobalKey<FormState>();
-  List<Map<String, dynamic>> records = [];
 
-  Product? selectedProduct;
-  TextEditingController quantityController = TextEditingController();
   TextEditingController commentController = TextEditingController();
 
-  List<StoreProductData>? get storeProducts => _authService.storeProduct;
+  List<CheckOutDetails> checkOutDetails = [];
+  List<Map<String, dynamic>> recordValues = [];
 
   CheckInData? get checkInData => _authService.checkedIn;
 
-  int inputIndex = 0;
+  void setQuantity(CheckOutDetails checkOutDetails, int value, int index) {
+    var detailsValue = {'check_in_stock_id': checkOutDetails.id, 'quantity': value};
 
-  addProduct(context) {
-    records.add(AddInput().toMap(selectedProduct!, int.parse(quantityController.text)));
-    selectedProduct = null;
-    quantityController.clear();
-    FocusScope.of(context).unfocus();
-    notifyListeners();
-    print(records);
+    if (recordValues.asMap().containsKey(index)) {
+      recordValues[index] = detailsValue;
+    } else {
+      recordValues.insert(index, detailsValue);
+    }
+
+    print(recordValues);
   }
 
   Future<void> checkOut(context) async {
-    List newRecords = [];
     LoaderDialog.showLoadingDialog(context, message: "Checking out...");
-    for (var element in records) {
-      newRecords.add({'product_id': element['product'].id, 'quantity': element['quantity']});
-    }
     try {
-      var data = {'check_in_id': checkInData!.id, 'comment': commentController.text, 'products': newRecords};
+      var data = {'check_in_id': checkInData!.id, 'comment': commentController.text, 'check_outs': recordValues};
 
       var response = await dio().post("/user/check-out", data: data);
 
@@ -85,11 +80,43 @@ class CheckOutFormViewModel extends ReactiveViewModel {
     }
   }
 
+  Future<ApiResponse> fetchCheckInStock(context) async {
+    ApiResponse response = ApiResponse(showMessage: false);
+    try {
+      await dio().get("/user/check-in/stocks/${checkInData!.id}").then((value) async {
+        print("GET SALES RESPONSE::::");
+
+        int? statusCode = value.statusCode;
+        Map<String, dynamic> responseData = value.data!;
+
+        if (statusCode == 200) {
+          if (responseData['status'] == 'success') {
+            print(jsonEncode(responseData));
+            CheckOutDetailsResponse checkOutDetailsResponse = CheckOutDetailsResponse.fromJson(responseData);
+            checkOutDetails = checkOutDetailsResponse.data!;
+            response = ApiResponse(showMessage: false, message: null);
+            notifyListeners();
+            return;
+          } else {
+            response = ApiResponse(showMessage: true, message: responseData['message']);
+            return;
+          }
+        } else {
+          response = ApiResponse(showMessage: true, message: responseData['message']);
+        }
+      });
+    } on DioError catch (e) {
+      print(e.response!);
+      response = ApiResponse(showMessage: true, message: 'Error Processing Request');
+    }
+    return response;
+  }
+
   @override
   // TODO: implement reactiveServices
   List<ReactiveServiceMixin> get reactiveServices => [];
 
-  setUp(context) {
-
+  Future<void> setUp(context) async {
+    await fetchCheckInStock(context);
   }
 }

@@ -32,13 +32,15 @@ class CheckInFormViewModel extends ReactiveViewModel {
   List<Store>? get stores => _authService.listStores;
   Store? selectedStore;
 
-  Product? selectedProduct;
+  StoreProductData? selectedProduct;
   TextEditingController quantityController = TextEditingController();
   TextEditingController commentController = TextEditingController();
 
   int inputIndex = 0;
+  int storeProductsCount = 0;
 
-  List<StoreProductData>? storeProducts = [];
+  List<StoreProductData> storeProducts = [];
+  List<StoreProductData> removedProducts = [];
 
   Future<void> setUp(context) async {
     if (stores!.isEmpty) {
@@ -63,12 +65,22 @@ class CheckInFormViewModel extends ReactiveViewModel {
   }
 
   addProduct(context) {
-    records.add(AddInput().toMap(selectedProduct!, int.parse(quantityController.text)));
+    records.add(AddInput().toMap(selectedProduct!.product!, int.parse(quantityController.text)));
+    removedProducts.add(selectedProduct!);
+    storeProducts.removeWhere((element) => element.id == selectedProduct!.id);
     selectedProduct = null;
     quantityController.clear();
     FocusScope.of(context).unfocus();
     notifyListeners();
-    print(records);
+  }
+
+  removeProduct(context, e) {
+    storeProducts.add(removedProducts.where((element) => element.product!.id == e['product'].id).single);
+    removedProducts.removeWhere((element) => element.product!.id == e['product'].id);
+    records.remove(e);
+    inputIndex = 1;
+    notifyListeners();
+    FocusScope.of(context).unfocus();
   }
 
   Future getStoreProducts(int id) async {
@@ -80,7 +92,9 @@ class CheckInFormViewModel extends ReactiveViewModel {
         if (statusCode == 200) {
           if (responseData['status'] == 'success') {
             StoreProductResponse storeProductResponse = StoreProductResponse.fromJson(responseData);
-            storeProducts = storeProductResponse.data;
+            storeProducts = storeProductResponse.data!;
+            storeProductsCount = storeProducts.length;
+            removedProducts.clear();
             _authService.setCurrentStoreProducts(storeProductResponse.data);
             notifyListeners();
           } else {}
@@ -92,46 +106,50 @@ class CheckInFormViewModel extends ReactiveViewModel {
   }
 
   Future<void> checkIn(context) async {
-    List newRecords = [];
-    LoaderDialog.showLoadingDialog(context, message: "Checking in...");
-    for (var element in records) {
-      newRecords.add({'product_id': element['product'].id, 'quantity': element['quantity']});
-    }
-    try {
-      var data = {'store_id': selectedStore!.id, 'comment': commentController.text, 'products': newRecords};
+    if(records.length < storeProductsCount) {
+      flusher("Please fill in each product's quantity", context, color: Colors.red);
+    } else {
+      List newRecords = [];
+      LoaderDialog.showLoadingDialog(context, message: "Checking in...");
+      for (var element in records) {
+        newRecords.add({'product_id': element['product'].id, 'quantity': element['quantity']});
+      }
+      try {
+        var data = {'store_id': selectedStore!.id, 'comment': commentController.text, 'products': newRecords};
 
-      var response = await dio().post('/user/check-in', data: data);
+        var response = await dio().post('/user/check-in', data: data);
 
-      int? statusCode = response.statusCode;
-      Map responseData = response.data!;
+        int? statusCode = response.statusCode;
+        Map responseData = response.data!;
 
-      if (statusCode == 200) {
-        Map jsonData = jsonDecode(response.toString());
-        if (responseData['status'] == 'success') {
-          _storageService.addBool('isCheckedIn', true);
-          CheckInData checkInData = CheckInData.fromJson(jsonData['data']);
-          _authService.setCheckedIn(checkInData);
-          await getStoreProducts(checkInData.storeId!);
-          await _authService.getProfile();
-          _navigationService.clearStackAndShowView(
-            SuccessfulScreen(
-              title: "CheckIn Successful",
-              buttonTitle: "Go Home",
-              onPressed: () => NavigationService().clearStackAndShowView(const HomepageView()),
-            ),
-          );
+        if (statusCode == 200) {
+          Map jsonData = jsonDecode(response.toString());
+          if (responseData['status'] == 'success') {
+            _storageService.addBool('isCheckedIn', true);
+            CheckInData checkInData = CheckInData.fromJson(jsonData['data']);
+            _authService.setCheckedIn(checkInData);
+            await getStoreProducts(checkInData.storeId!);
+            await _authService.getProfile();
+            _navigationService.clearStackAndShowView(
+              SuccessfulScreen(
+                title: "CheckIn Successful",
+                buttonTitle: "Go Home",
+                onPressed: () => NavigationService().clearStackAndShowView(const HomepageView()),
+              ),
+            );
+          } else {
+            _dialogService.completeDialog(DialogResponse());
+            flusher(json.decode(response.toString())['message'], context, color: Colors.red);
+          }
         } else {
           _dialogService.completeDialog(DialogResponse());
           flusher(json.decode(response.toString())['message'], context, color: Colors.red);
         }
-      } else {
+      } on DioError catch (e) {
         _dialogService.completeDialog(DialogResponse());
-        flusher(json.decode(response.toString())['message'], context, color: Colors.red);
+        print(e.response);
+        flusher('Request error: ${DioExceptions.fromDioError(e).toString()}', context, color: Colors.red);
       }
-    } on DioError catch (e) {
-      _dialogService.completeDialog(DialogResponse());
-      print(e.response);
-      flusher('Request error: ${DioExceptions.fromDioError(e).toString()}', context, color: Colors.red);
     }
   }
 

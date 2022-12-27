@@ -18,13 +18,13 @@ import '../utils/tools.dart';
 
 class AuthService with ReactiveServiceMixin {
 
-  final RxValue<List<Store>?> _listStores = RxValue<List<Store>?>(null);
+  final RxValue<List<Store>?> _listStores = RxValue<List<Store>?>([]);
   List<Store>? get listStores => _listStores.value;
 
   final RxValue<CheckInData?> _checkedIn = RxValue<CheckInData?>(null);
   CheckInData? get checkedIn => _checkedIn.value;
 
-  final RxValue<List<StoreProductData>?> _storeProductData = RxValue<List<StoreProductData>?>(null);
+  final RxValue<List<StoreProductData>?> _storeProductData = RxValue<List<StoreProductData>?>([]);
   List<StoreProductData>? get storeProduct => _storeProductData.value;
 
   final RxValue<List<Sale>?> _recordSale = RxValue<List<Sale>?>([]);

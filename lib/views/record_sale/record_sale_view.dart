@@ -62,7 +62,7 @@ class RecordSaleView extends StatelessWidget {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                model.selectedProduct?.name ?? "Select product",
+                                                model.selectedProduct?.product?.name ?? "Select product",
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),

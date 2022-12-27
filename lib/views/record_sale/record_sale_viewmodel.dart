@@ -31,12 +31,12 @@ class RecordSaleViewModel extends ReactiveViewModel {
 
   List<StoreProductData>? get storeProducts => _authService.storeProduct;
 
-  Product? selectedProduct;
+  StoreProductData? selectedProduct;
   TextEditingController quantityController = TextEditingController();
   TextEditingController commentController = TextEditingController();
 
   addProduct(context) {
-    records.add(AddInput().toMap(selectedProduct!, int.parse(quantityController.text)));
+    records.add(AddInput().toMap(selectedProduct!.product!, int.parse(quantityController.text)));
     selectedProduct = null;
     quantityController.clear();
     FocusScope.of(context).unfocus();
