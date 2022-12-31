@@ -60,6 +60,9 @@ class CheckInFormViewModel extends ReactiveViewModel {
   Future<void> selectStore(Store item) async {
     selectedStore = item;
     await getStoreProducts(item.id!);
+    selectedProduct = null;
+    quantityController.clear();
+    commentController.clear();
     records.clear();
     notifyListeners();
   }
