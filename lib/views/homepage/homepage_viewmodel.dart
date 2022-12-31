@@ -8,7 +8,9 @@ import '../../core/models/sales_record.dart';
 class HomepageViewModel extends ReactiveViewModel {
   final AuthService _authService = locator<AuthService>();
 
-  List<Sale>? get allSales => _authService.recordSale;
+  List<Sales>? get allSales => _authService.recordSale?.sales;
+  List<Stocks>? get allStocks => _authService.recordSale?.stocks;
+
   Profile? get profile => _authService.profile;
 
   void setUp() {}

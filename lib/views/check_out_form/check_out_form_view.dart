@@ -150,7 +150,7 @@ class CheckOutFormView extends StatelessWidget {
                                         "Name:",
                                       ),
                                       Text(
-                                        detail.product?.name ?? "hfjsdfjk",
+                                        detail.product!.name!,
                                       ),
                                     ],
                                   ),
@@ -172,6 +172,16 @@ class CheckOutFormView extends StatelessWidget {
                                         "Check In Qty:",
                                       ),
                                       Text(detail.checkInQuantity.toString()),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "New Stock Qty:",
+                                      ),
+                                      Text(detail.newStockQuantity.toString()),
                                     ],
                                   ),
                                   const SizedBox(height: 10),

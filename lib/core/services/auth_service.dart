@@ -27,8 +27,8 @@ class AuthService with ReactiveServiceMixin {
   final RxValue<List<StoreProductData>?> _storeProductData = RxValue<List<StoreProductData>?>([]);
   List<StoreProductData>? get storeProduct => _storeProductData.value;
 
-  final RxValue<List<Sale>?> _recordSale = RxValue<List<Sale>?>([]);
-  List<Sale>? get recordSale => _recordSale.value;
+  final RxValue<Records?> _recordSale = RxValue<Records?>(null);
+  Records? get recordSale => _recordSale.value;
 
   final RxValue<Profile?> _profile = RxValue<Profile?>(null);
   Profile? get profile => _profile.value;
@@ -91,10 +91,8 @@ class AuthService with ReactiveServiceMixin {
       await dio().post('/user/stores/location/get', data: data).then((value) async {
         print("GET STORES RESPONSE::::");
 
-        int? statusCode = value.statusCode;
         Map<String, dynamic> responseData = value.data!;
 
-        if (statusCode == 200) {
           if (responseData['status'] == 'success') {
             NearbyStoreResponse temp = NearbyStoreResponse.fromJson(responseData);
             _listStores.value = temp.store;
@@ -105,9 +103,6 @@ class AuthService with ReactiveServiceMixin {
             response = ApiResponse(showMessage: true, message: responseData['message']);
             return;
           }
-        } else {
-          response = ApiResponse(showMessage: true, message: responseData['message']);
-        }
       });
     } on DioError catch (e) {
       print(e.response!.data);
@@ -123,11 +118,10 @@ class AuthService with ReactiveServiceMixin {
       await dio().get("/user/sale/all/${checkedIn!.id}").then((value) async {
         print("GET SALES RESPONSE::::");
 
-        int? statusCode = value.statusCode;
         Map<String, dynamic> responseData = value.data!;
 
-        if (statusCode == 200) {
           if (responseData['status'] == 'success') {
+            print(jsonEncode(responseData));
             SalesRecord salesRecord = SalesRecord.fromJson(responseData);
             _recordSale.value = salesRecord.data;
             response = ApiResponse(showMessage: false, message: null);
@@ -137,9 +131,6 @@ class AuthService with ReactiveServiceMixin {
             response = ApiResponse(showMessage: true, message: responseData['message']);
             return;
           }
-        } else {
-          response = ApiResponse(showMessage: true, message: responseData['message']);
-        }
       });
     } on DioError catch (e) {
       print(e.response!);
@@ -155,10 +146,8 @@ class AuthService with ReactiveServiceMixin {
       await dio().get("/user/profile").then((value) async {
         print("GET PROFILE RESPONSE::::");
 
-        int? statusCode = value.statusCode;
         Map<String, dynamic> responseData = value.data!;
 
-        if (statusCode == 200) {
           if (responseData['status'] == 'success') {
             UserProfile userProfile = UserProfile.fromJson(responseData);
             _profile.value = userProfile.data;
@@ -169,9 +158,6 @@ class AuthService with ReactiveServiceMixin {
             response = ApiResponse(showMessage: true, message: responseData['message']);
             return;
           }
-        } else {
-          response = ApiResponse(showMessage: true, message: responseData['message']);
-        }
       });
     } on DioError catch (e) {
       print(e.response!);

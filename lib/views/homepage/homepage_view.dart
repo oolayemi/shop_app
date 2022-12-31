@@ -158,7 +158,7 @@ class HomepageView extends StatelessWidget {
                       topRight: Radius.circular(12),
                     ),
                   ),
-                  child: model.allSales!.isEmpty
+                  child: model.allSales!.isEmpty && model.allStocks!.isEmpty
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -166,7 +166,7 @@ class HomepageView extends StatelessWidget {
                               SvgPicture.asset("assets/images/worried.svg"),
                               const SizedBox(height: 20),
                               const Text(
-                                "You have not recorded\nany stock for today.",
+                                "You have not recorded\nany stock or sale for today.",
                                 style: TextStyle(fontSize: 16, color: Color(0xFF102002)),
                                 textAlign: TextAlign.center,
                               ),
@@ -197,7 +197,7 @@ class HomepageView extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     const Text(
-                                      "Today’s Stock",
+                                      "Records",
                                       style: TextStyle(color: Color(0xFF102002), fontSize: 16),
                                     ),
                                     ElevatedButton(
@@ -216,25 +216,55 @@ class HomepageView extends StatelessWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-                                Column(
-                                  children: model.allSales!.map((sale) {
-                                    return Column(
-                                      children: [
-                                        ListTile(
-                                          title: Text("${sale.product!.name} - ${sale.quantity} piece(s)"),
-                                          trailing: Text(
-                                            formatMoney(sale.totalPrice.toString()),
-                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                          ),
-                                          subtitle: Text(DateFormat('dd/MM/yy').format(DateTime.parse(sale.createdAt!))),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                        ),
-                                        const Divider(thickness: 1),
-                                      ],
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(height: 20)
+                                model.allSales!.isNotEmpty ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("Sales Records"),
+                                    Column(
+                                      children: model.allSales!.map((sale) {
+                                        return Column(
+                                          children: [
+                                            ListTile(
+                                              title: Text("${sale.product!.name} - ${sale.quantity} piece(s)"),
+                                              trailing: Text(
+                                                formatMoney(sale.totalPrice.toString()),
+                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                              ),
+                                              subtitle: Text(DateFormat('dd/MM/yy').format(DateTime.parse(sale.createdAt!))),
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                            ),
+                                            const Divider(thickness: 1),
+                                          ],
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ) : const SizedBox(),
+                                const SizedBox(height: 20),
+                                model.allStocks!.isNotEmpty ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("New Stock Records"),
+                                    Column(
+                                      children: model.allStocks!.map((sale) {
+                                        return Column(
+                                          children: [
+                                            ListTile(
+                                              title: Text("${sale.product!.name} - ${sale.quantity} piece(s)"),
+                                              trailing: const Text(
+                                                '',
+                                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                              ),
+                                              subtitle: Text(DateFormat('dd/MM/yy').format(DateTime.parse(sale.createdAt!))),
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                            ),
+                                            const Divider(thickness: 1),
+                                          ],
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ) : const SizedBox(),
                               ],
                             ),
                           ),

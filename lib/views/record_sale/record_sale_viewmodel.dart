@@ -71,10 +71,8 @@ class RecordSaleViewModel extends ReactiveViewModel {
 
       var response = await dio().post('/user/sale/add', data: data);
 
-      int? statusCode = response.statusCode;
       Map responseData = response.data!;
 
-      if (statusCode == 200) {
         if (responseData['status'] == 'success') {
           _authService.getSales();
           _navigationService.back();
@@ -89,10 +87,6 @@ class RecordSaleViewModel extends ReactiveViewModel {
           _dialogService.completeDialog(DialogResponse());
           flusher(json.decode(response.toString())['message'], context, color: Colors.red);
         }
-      } else {
-        _dialogService.completeDialog(DialogResponse());
-        flusher(json.decode(response.toString())['message'], context, color: Colors.red);
-      }
     } on DioError catch (e) {
       _dialogService.completeDialog(DialogResponse());
       print(e.response);

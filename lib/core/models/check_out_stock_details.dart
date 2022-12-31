@@ -33,6 +33,7 @@ class CheckOutDetails {
   int? id;
   int? checkInId;
   int? checkInQuantity;
+  int? newStockQuantity;
   int? productId;
   int? soldQuantity;
   int? checkoutQuantity;
@@ -42,6 +43,7 @@ class CheckOutDetails {
       {this.id,
         this.checkInId,
         this.checkInQuantity,
+        this.newStockQuantity,
         this.productId,
         this.soldQuantity,
         this.checkoutQuantity,
@@ -51,6 +53,7 @@ class CheckOutDetails {
     id = json['id'];
     checkInId = json['check_in_id'];
     checkInQuantity = json['check_in_quantity'];
+    newStockQuantity = json['new_stock_quantity'];
     productId = json['product_id'];
     soldQuantity = json['sold_quantity'];
     checkoutQuantity = json['checkout_quantity'];
@@ -63,6 +66,7 @@ class CheckOutDetails {
     data['id'] = id;
     data['check_in_id'] = checkInId;
     data['check_in_quantity'] = checkInQuantity;
+    data['new_stock_quantity'] = newStockQuantity;
     data['product_id'] = productId;
     data['sold_quantity'] = soldQuantity;
     data['checkout_quantity'] = checkoutQuantity;

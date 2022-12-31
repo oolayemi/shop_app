@@ -41,10 +41,8 @@ class SignInViewModel extends ReactiveViewModel {
 
       var response = await dio(withToken: false).post('/auth/login', data: data);
 
-      int? statusCode = response.statusCode;
       Map responseData = response.data!;
 
-      if (statusCode == 200) {
         Map jsonData = jsonDecode(response.toString());
         if (responseData['status'] == 'success') {
           _storageService.addString("token", jsonData['token']);
@@ -56,10 +54,6 @@ class SignInViewModel extends ReactiveViewModel {
           _dialogService.completeDialog(DialogResponse());
           flusher(json.decode(response.toString())['message'], context, color: Colors.red);
         }
-      } else {
-        _dialogService.completeDialog(DialogResponse());
-        flusher(json.decode(response.toString())['message'], context, color: Colors.red);
-      }
     } on DioError catch (e) {
       _dialogService.completeDialog(DialogResponse());
       print(e.response);

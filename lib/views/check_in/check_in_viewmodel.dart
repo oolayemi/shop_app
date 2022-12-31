@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shop_app/app/locator.dart';
 import 'package:shop_app/core/models/api_response.dart';
 import 'package:shop_app/core/models/check_in_data.dart';
-import 'package:shop_app/core/models/nearby_store.dart';
 import 'package:shop_app/core/services/auth_service.dart';
 import 'package:shop_app/views/check_in_form/check_in_form_viewmodel.dart';
 import 'package:shop_app/views/homepage/homepage_view.dart';
@@ -21,6 +20,10 @@ import '../check_in_form/check_in_form_view.dart';
 class CheckInViewModel extends ReactiveViewModel {
   final NavigationService _navigationService = locator<NavigationService>();
   final AuthService _authService = locator<AuthService>();
+
+  Future<void> setUp() async {
+    await _authService.getStores();
+  }
 
   Future gotoCheckInForm(context) async {
     bool serviceEnabled;
@@ -70,6 +73,7 @@ class CheckInViewModel extends ReactiveViewModel {
         CheckInData checkInData = CheckInData.fromJson(jsonData['data']);
         await _authService.setCheckedIn(checkInData);
         await _authService.getProfile();
+        await _authService.getSales();
         CheckInFormViewModel().getStoreProducts(checkInData.storeId!);
         apiResponse = ApiResponse(showMessage: true, message: json.decode(response.toString())['message']);
         return apiResponse;

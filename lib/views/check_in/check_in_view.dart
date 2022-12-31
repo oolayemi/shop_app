@@ -11,6 +11,7 @@ class CheckInView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder<CheckInViewModel>.reactive(
       viewModelBuilder: () => CheckInViewModel(),
+      onModelReady: (model) => model.setUp(),
       builder: (context, model, child) {
         return Scaffold(
           backgroundColor: BrandColors.primaryBg,
@@ -28,7 +29,7 @@ class CheckInView extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     model.gotoCheckInForm(context);
                   },
                   child: Image.asset(

@@ -67,7 +67,7 @@ class CheckInFormViewModel extends ReactiveViewModel {
   addProduct(context) {
     records.add(AddInput().toMap(selectedProduct!.product!, int.parse(quantityController.text)));
     removedProducts.add(selectedProduct!);
-    storeProducts.removeWhere((element) => element.id == selectedProduct!.id);
+    storeProducts.removeWhere((element) => element.productId == selectedProduct!.productId);
     selectedProduct = null;
     quantityController.clear();
     FocusScope.of(context).unfocus();
@@ -86,18 +86,16 @@ class CheckInFormViewModel extends ReactiveViewModel {
   Future getStoreProducts(int id) async {
     try {
       await dio().get('/user/stores/products/get/$id').then((value) async {
+        var seen = <String>{};
         print("GET STORES PRODUCTS RESPONSE::::");
-        int? statusCode = value.statusCode;
         Map<String, dynamic> responseData = value.data!;
-        if (statusCode == 200) {
-          if (responseData['status'] == 'success') {
-            StoreProductResponse storeProductResponse = StoreProductResponse.fromJson(responseData);
-            storeProducts = storeProductResponse.data!;
-            storeProductsCount = storeProducts.length;
-            removedProducts.clear();
-            _authService.setCurrentStoreProducts(storeProductResponse.data);
-            notifyListeners();
-          } else {}
+        if (responseData['status'] == 'success') {
+          StoreProductResponse storeProductResponse = StoreProductResponse.fromJson(responseData);
+          storeProducts = storeProductResponse.data!.where((storeProduct) => seen.add(storeProduct.productId.toString())).toList();
+          storeProductsCount = storeProducts.length;
+          removedProducts.clear();
+          _authService.setCurrentStoreProducts(storeProducts);
+          notifyListeners();
         } else {}
       });
     } on DioError catch (e) {
@@ -106,7 +104,7 @@ class CheckInFormViewModel extends ReactiveViewModel {
   }
 
   Future<void> checkIn(context) async {
-    if(records.length < storeProductsCount) {
+    if (records.length < storeProductsCount) {
       flusher("Please fill in each product's quantity", context, color: Colors.red);
     } else {
       List newRecords = [];
@@ -119,28 +117,23 @@ class CheckInFormViewModel extends ReactiveViewModel {
 
         var response = await dio().post('/user/check-in', data: data);
 
-        int? statusCode = response.statusCode;
         Map responseData = response.data!;
 
-        if (statusCode == 200) {
-          Map jsonData = jsonDecode(response.toString());
-          if (responseData['status'] == 'success') {
-            _storageService.addBool('isCheckedIn', true);
-            CheckInData checkInData = CheckInData.fromJson(jsonData['data']);
-            _authService.setCheckedIn(checkInData);
-            await getStoreProducts(checkInData.storeId!);
-            await _authService.getProfile();
-            _navigationService.clearStackAndShowView(
-              SuccessfulScreen(
-                title: "CheckIn Successful",
-                buttonTitle: "Go Home",
-                onPressed: () => NavigationService().clearStackAndShowView(const HomepageView()),
-              ),
-            );
-          } else {
-            _dialogService.completeDialog(DialogResponse());
-            flusher(json.decode(response.toString())['message'], context, color: Colors.red);
-          }
+        Map jsonData = jsonDecode(response.toString());
+        if (responseData['status'] == 'success') {
+          _storageService.addBool('isCheckedIn', true);
+          CheckInData checkInData = CheckInData.fromJson(jsonData['data']);
+          _authService.setCheckedIn(checkInData);
+          await getStoreProducts(checkInData.storeId!);
+          await _authService.getProfile();
+          await _authService.getSales();
+          _navigationService.clearStackAndShowView(
+            SuccessfulScreen(
+              title: "CheckIn Successful",
+              buttonTitle: "Go Home",
+              onPressed: () => NavigationService().clearStackAndShowView(const HomepageView()),
+            ),
+          );
         } else {
           _dialogService.completeDialog(DialogResponse());
           flusher(json.decode(response.toString())['message'], context, color: Colors.red);

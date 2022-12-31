@@ -41,8 +41,6 @@ class CheckOutFormViewModel extends ReactiveViewModel {
     } else {
       recordValues.insert(index, detailsValue);
     }
-
-    print(recordValues);
   }
 
   Future<void> checkOut(context) async {
@@ -52,23 +50,17 @@ class CheckOutFormViewModel extends ReactiveViewModel {
 
       var response = await dio().post("/user/check-out", data: data);
 
-      int? statusCode = response.statusCode;
       Map responseData = response.data!;
 
-      if (statusCode == 200) {
-        if (responseData['status'] == 'success') {
-          _storageService.addBool('isCheckedIn', false);
-          _navigationService.clearStackAndShowView(
-            SuccessfulScreen(
-              title: "CheckOut Successful",
-              buttonTitle: "Go to Check In",
-              onPressed: () => NavigationService().clearStackAndShowView(const CheckInView()),
-            ),
-          );
-        } else {
-          _dialogService.completeDialog(DialogResponse());
-          flusher(json.decode(response.toString())['message'], context, color: Colors.red);
-        }
+      if (responseData['status'] == 'success') {
+        _storageService.addBool('isCheckedIn', false);
+        _navigationService.clearStackAndShowView(
+          SuccessfulScreen(
+            title: "CheckOut Successful",
+            buttonTitle: "Go to Check In",
+            onPressed: () => NavigationService().clearStackAndShowView(const CheckInView()),
+          ),
+        );
       } else {
         _dialogService.completeDialog(DialogResponse());
         flusher(json.decode(response.toString())['message'], context, color: Colors.red);
@@ -86,23 +78,17 @@ class CheckOutFormViewModel extends ReactiveViewModel {
       await dio().get("/user/check-in/stocks/${checkInData!.id}").then((value) async {
         print("GET SALES RESPONSE::::");
 
-        int? statusCode = value.statusCode;
         Map<String, dynamic> responseData = value.data!;
 
-        if (statusCode == 200) {
-          if (responseData['status'] == 'success') {
-            print(jsonEncode(responseData));
-            CheckOutDetailsResponse checkOutDetailsResponse = CheckOutDetailsResponse.fromJson(responseData);
-            checkOutDetails = checkOutDetailsResponse.data!;
-            response = ApiResponse(showMessage: false, message: null);
-            notifyListeners();
-            return;
-          } else {
-            response = ApiResponse(showMessage: true, message: responseData['message']);
-            return;
-          }
+        if (responseData['status'] == 'success') {
+          CheckOutDetailsResponse checkOutDetailsResponse = CheckOutDetailsResponse.fromJson(responseData);
+          checkOutDetails = checkOutDetailsResponse.data!;
+          response = ApiResponse(showMessage: false, message: null);
+          notifyListeners();
+          return;
         } else {
           response = ApiResponse(showMessage: true, message: responseData['message']);
+          return Future.error(responseData['message']);
         }
       });
     } on DioError catch (e) {

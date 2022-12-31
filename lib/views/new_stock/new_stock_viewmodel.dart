@@ -70,10 +70,8 @@ class NewStockViewModel extends ReactiveViewModel {
 
       var response = await dio().post('/user/stock/add', data: data);
 
-      int? statusCode = response.statusCode;
       Map responseData = response.data!;
 
-      if (statusCode == 200) {
         if (responseData['status'] == 'success') {
           _authService.getSales();
           _navigationService.back();
@@ -88,10 +86,6 @@ class NewStockViewModel extends ReactiveViewModel {
           _dialogService.completeDialog(DialogResponse());
           flusher(json.decode(response.toString())['message'], context, color: Colors.red);
         }
-      } else {
-        _dialogService.completeDialog(DialogResponse());
-        flusher(json.decode(response.toString())['message'], context, color: Colors.red);
-      }
     } on DioError catch (e) {
       _dialogService.completeDialog(DialogResponse());
       print(e.response);
