@@ -10,7 +10,9 @@ import 'package:shop_app/core/models/check_in_data.dart';
 import 'package:shop_app/core/models/nearby_store.dart';
 import 'package:shop_app/core/models/store_products_response.dart';
 import 'package:shop_app/core/models/user_profile.dart';
+import 'package:shop_app/views/sign_in/signin_view.dart';
 import 'package:stacked/stacked.dart';
+import 'package:stacked_services/stacked_services.dart';
 
 import '../models/api_response.dart';
 import '../models/sales_record.dart';
@@ -106,6 +108,9 @@ class AuthService with ReactiveServiceMixin {
       });
     } on DioError catch (e) {
       print(e.response!.data);
+      if(e.response?.statusCode == 401){
+        NavigationService().clearStackAndShowView(const SignInView());
+      }
       response = ApiResponse(showMessage: true, message: 'Error Processing Request');
     }
     return response;

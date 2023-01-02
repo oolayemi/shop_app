@@ -52,7 +52,7 @@ class HomepageView extends StatelessWidget {
                                   children: [
                                     CircleAvatar(
                                       backgroundImage: model.profile?.imageUrl == null
-                                          ? const AssetImage("assets/images/user.png")
+                                          ? const AssetImage("assets/images/user.jpg")
                                           : NetworkImage(model.profile!.imageUrl!) as ImageProvider,
                                     ),
                                     const SizedBox(width: 6),
